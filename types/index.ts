@@ -47,6 +47,7 @@ export interface PresidentStats {
   endYear: number | null;
   // Enhanced stats
   imageUrl?: string; // Wikipedia portrait
+  party?: string; // Political party affiliation
   totalTerms?: number; // How many terms served
   firstTermCount?: number; // Orders in first term
   secondTermCount?: number; // Orders in second term
