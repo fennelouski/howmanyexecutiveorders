@@ -9,7 +9,7 @@ export async function GET() {
   try {
     const orders = await getAllExecutiveOrders();
     const total = getTotalCount(orders);
-    const presidentStats = calculatePresidentStats(orders);
+    const presidentStats = await calculatePresidentStats(orders);
     const yearlyStats = getYearlyStats(orders);
 
     return NextResponse.json({
