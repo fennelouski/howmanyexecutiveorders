@@ -3,12 +3,14 @@
 
 import { useState, useMemo } from 'react';
 import { ExecutiveOrder } from '@/types';
+import { useDisplayOptions } from '@/contexts/DisplayOptionsContext';
 
 interface ExecutiveOrdersListProps {
   orders: ExecutiveOrder[];
 }
 
 export default function ExecutiveOrdersList({ orders }: ExecutiveOrdersListProps) {
+  const { options } = useDisplayOptions();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPresident, setSelectedPresident] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
@@ -104,16 +106,20 @@ export default function ExecutiveOrdersList({ orders }: ExecutiveOrdersListProps
                 <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50 mb-1">
                   {order.title}
                 </h3>
-                {order.abstract && (
+                {options.showAbstracts && order.abstract && (
                   <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-2 line-clamp-2">
                     {order.abstract}
                   </p>
                 )}
                 <div className="flex flex-wrap gap-3 text-xs text-zinc-500 dark:text-zinc-500">
                   <span className="font-medium">{order.president}</span>
-                  <span>•</span>
-                  <span>Signed: {new Date(order.signing_date).toLocaleDateString()}</span>
-                  {order.citation && (
+                  {options.showDates && (
+                    <>
+                      <span>•</span>
+                      <span>Signed: {new Date(order.signing_date).toLocaleDateString()}</span>
+                    </>
+                  )}
+                  {options.showCitations && order.citation && (
                     <>
                       <span>•</span>
                       <span>{order.citation}</span>

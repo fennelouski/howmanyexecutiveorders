@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { DisplayOptionsProvider } from "@/contexts/DisplayOptionsContext";
 
 export const metadata: Metadata = {
   title: "How Many Executive Orders? | U.S. Presidential Executive Orders Tracker",
@@ -21,7 +22,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        {children}
+        <DisplayOptionsProvider>
+          {children}
+        </DisplayOptionsProvider>
       </body>
     </html>
   );

@@ -1,6 +1,6 @@
 // Federal Register API integration
 import { FederalRegisterResponse, ExecutiveOrder, PresidentStats } from '@/types';
-import { PRESIDENTS, getPresidentTerm, getWikipediaTitle } from './presidentData';
+import { PRESIDENTS, getPresidentTerm, getWikipediaTitle, getPresidentParty } from './presidentData';
 import { getOrderContext, isCongressInSession, isLameDuckPeriod } from './congressionalSessions';
 import { getPresidentImage } from './wikipediaImages';
 
@@ -206,6 +206,7 @@ export async function calculatePresidentStats(orders: ExecutiveOrder[]): Promise
         startYear: Math.min(...data.years),
         endYear: Math.max(...data.years),
         imageUrl,
+        party: getPresidentParty(name) || 'Unknown',
         totalTerms: presidentData?.totalTerms || 1,
         firstTermCount: data.firstTermCount,
         secondTermCount: data.secondTermCount,
