@@ -11,6 +11,12 @@ export interface ExecutiveOrder {
   html_url: string;
   pdf_url: string;
   citation?: string;
+  // Enhanced metadata
+  termNumber?: number; // Which presidential term (1st, 2nd, etc.)
+  congressNumber?: number; // Which Congress was in session
+  duringCongressionalSession?: boolean; // Was Congress in session?
+  isLameDuck?: boolean; // Lame duck period?
+  isLastTerm?: boolean; // President's final term?
 }
 
 export interface FederalRegisterDocument {
@@ -39,6 +45,13 @@ export interface PresidentStats {
   count: number;
   startYear: number;
   endYear: number | null;
+  // Enhanced stats
+  imageUrl?: string; // Wikipedia portrait
+  totalTerms?: number; // How many terms served
+  firstTermCount?: number; // Orders in first term
+  secondTermCount?: number; // Orders in second term
+  duringSessionCount?: number; // Orders while Congress in session
+  lameDuckCount?: number; // Orders during lame duck period
 }
 
 export interface YearlyStats {

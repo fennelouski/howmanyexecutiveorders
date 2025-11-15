@@ -1,5 +1,8 @@
 // Federal Register API integration
 import { FederalRegisterResponse, ExecutiveOrder, PresidentStats } from '@/types';
+import { PRESIDENTS, getPresidentTerm, getWikipediaTitle } from './presidentData';
+import { getOrderContext, isCongressInSession, isLameDuckPeriod } from './congressionalSessions';
+import { getPresidentImage } from './wikipediaImages';
 
 const FEDERAL_REGISTER_API = 'https://www.federalregister.gov/api/v1';
 
@@ -64,17 +67,38 @@ export async function getAllExecutiveOrders(): Promise<ExecutiveOrder[]> {
   while (hasMore) {
     const response = await fetchExecutiveOrders(currentPage, 1000);
 
-    // Add president information from the title/abstract parsing
-    const ordersWithPresident = response.results.map(order => {
-      // Try to extract president from the signing date or use a lookup
+    // Add enhanced metadata to each order
+    const ordersWithMetadata = response.results.map(order => {
+      // Extract president from signing date
       const president = extractPresidentFromOrder(order);
+      const signingDate = order.signing_date || order.publication_date;
+
+      // Get president term information
+      const presidentData = PRESIDENTS.find(p => p.name === president);
+      const termInfo = getPresidentTerm(president, signingDate);
+
+      // Get congressional context
+      const context = termInfo
+        ? getOrderContext(
+            signingDate,
+            president,
+            termInfo.termNumber,
+            presidentData?.totalTerms || 1
+          )
+        : null;
+
       return {
         ...order,
         president,
+        termNumber: termInfo?.termNumber,
+        congressNumber: context?.congressNumber,
+        duringCongressionalSession: context?.inSession,
+        isLameDuck: context?.isLameDuck,
+        isLastTerm: context?.isLastTerm,
       } as ExecutiveOrder;
     });
 
-    allOrders.push(...ordersWithPresident);
+    allOrders.push(...ordersWithMetadata);
 
     hasMore = response.next_page_url !== null;
     currentPage++;
@@ -113,30 +137,85 @@ function extractPresidentFromOrder(order: any): string {
   return 'Unknown';
 }
 
-export function calculatePresidentStats(orders: ExecutiveOrder[]): PresidentStats[] {
-  const stats = new Map<string, { count: number; years: number[] }>();
+export async function calculatePresidentStats(orders: ExecutiveOrder[]): Promise<PresidentStats[]> {
+  const stats = new Map<string, {
+    count: number;
+    years: number[];
+    firstTermCount: number;
+    secondTermCount: number;
+    duringSessionCount: number;
+    lameDuckCount: number;
+  }>();
 
+  // Calculate stats from orders
   orders.forEach(order => {
     const president = order.president;
     const year = new Date(order.signing_date || order.publication_date).getFullYear();
 
     if (!stats.has(president)) {
-      stats.set(president, { count: 0, years: [] });
+      stats.set(president, {
+        count: 0,
+        years: [],
+        firstTermCount: 0,
+        secondTermCount: 0,
+        duringSessionCount: 0,
+        lameDuckCount: 0,
+      });
     }
 
     const stat = stats.get(president)!;
     stat.count++;
     stat.years.push(year);
+
+    // Track term-specific counts
+    if (order.termNumber === 1) {
+      stat.firstTermCount++;
+    } else if (order.termNumber === 2) {
+      stat.secondTermCount++;
+    }
+
+    // Track congressional session counts
+    if (order.duringCongressionalSession) {
+      stat.duringSessionCount++;
+    }
+
+    // Track lame duck counts
+    if (order.isLameDuck) {
+      stat.lameDuckCount++;
+    }
   });
 
-  return Array.from(stats.entries())
-    .map(([name, data]) => ({
-      name,
-      count: data.count,
-      startYear: Math.min(...data.years),
-      endYear: Math.max(...data.years),
-    }))
-    .sort((a, b) => b.startYear - a.startYear);
+  // Convert to array and fetch images
+  const statsArray = await Promise.all(
+    Array.from(stats.entries()).map(async ([name, data]) => {
+      const presidentData = PRESIDENTS.find(p => p.name === name);
+      const wikipediaTitle = getWikipediaTitle(name);
+
+      let imageUrl = '';
+      if (wikipediaTitle) {
+        try {
+          imageUrl = await getPresidentImage(name, wikipediaTitle);
+        } catch (error) {
+          console.error(`Failed to fetch image for ${name}:`, error);
+        }
+      }
+
+      return {
+        name,
+        count: data.count,
+        startYear: Math.min(...data.years),
+        endYear: Math.max(...data.years),
+        imageUrl,
+        totalTerms: presidentData?.totalTerms || 1,
+        firstTermCount: data.firstTermCount,
+        secondTermCount: data.secondTermCount,
+        duringSessionCount: data.duringSessionCount,
+        lameDuckCount: data.lameDuckCount,
+      };
+    })
+  );
+
+  return statsArray.sort((a, b) => b.startYear - a.startYear);
 }
 
 export function getTotalCount(orders: ExecutiveOrder[]): number {
