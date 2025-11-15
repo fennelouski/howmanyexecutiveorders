@@ -2,6 +2,11 @@
 import StatsCard from '@/components/StatsCard';
 import PresidentTable from '@/components/PresidentTable';
 import ExecutiveOrdersList from '@/components/ExecutiveOrdersList';
+import ExecutiveOrdersTimeline from '@/components/charts/ExecutiveOrdersTimeline';
+import OrdersByPresident from '@/components/charts/OrdersByPresident';
+import TermComparison from '@/components/charts/TermComparison';
+import RunningTotal from '@/components/charts/RunningTotal';
+import RecentPresidentsBreakdown from '@/components/charts/RecentPresidentsBreakdown';
 
 async function getExecutiveOrdersData() {
   try {
@@ -92,6 +97,33 @@ export default async function Home() {
             value={mostRecent.president}
             description={new Date(mostRecent.signing_date).toLocaleDateString()}
           />
+        </div>
+
+        {/* Visual Analytics Section */}
+        <div className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
+              Visual Analytics
+            </h2>
+            <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+              Interactive charts and graphs to help visualize executive order trends and patterns
+            </p>
+          </div>
+
+          {/* First Row: Timeline and Running Total */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ExecutiveOrdersTimeline yearlyStats={yearlyStats} />
+            <RunningTotal yearlyStats={yearlyStats} />
+          </div>
+
+          {/* Second Row: Orders by President */}
+          <OrdersByPresident stats={presidentStats} />
+
+          {/* Third Row: Term Comparison and Recent Presidents */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TermComparison stats={presidentStats} />
+            <RecentPresidentsBreakdown stats={presidentStats} />
+          </div>
         </div>
 
         {/* President Stats Table */}
