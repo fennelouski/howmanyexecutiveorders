@@ -1,26 +1,15 @@
 // Main page - Executive Orders Tracker
 import PageContent from '@/components/PageContent';
 
-async function getExecutiveOrdersData() {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const response = await fetch(`${baseUrl}/api/executive-orders`, {
-      cache: 'no-store',
-    });
+import { getExecutiveOrdersData } from '@/lib/federalRegister';
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch data');
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error('Error fetching executive orders:', error);
-    return null;
-  }
-}
+export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-  const data = await getExecutiveOrdersData();
+  const data = await getExecutiveOrdersData().catch(error => {
+    console.error('Error fetching executive orders:', error);
+    return null;
+  });
 
   if (!data) {
     return (

@@ -1,5 +1,6 @@
 'use client';
 
+import type { ExecutiveOrder, PresidentStats, YearlyStats } from '@/types';
 import { useDisplayOptions } from '@/contexts/DisplayOptionsContext';
 import StatsCard from '@/components/StatsCard';
 import PresidentTable from '@/components/PresidentTable';
@@ -14,9 +15,9 @@ import DisplaySettings from '@/components/DisplaySettings';
 interface PageContentProps {
   data: {
     total: number;
-    presidentStats: any[];
-    yearlyStats: any[];
-    orders: any[];
+    presidentStats: PresidentStats[];
+    yearlyStats: YearlyStats[];
+    orders: ExecutiveOrder[];
     lastUpdated: string;
   };
 }
@@ -28,7 +29,7 @@ export default function PageContent({ data }: PageContentProps) {
   // Calculate some interesting stats
   const mostRecent = orders[orders.length - 1];
   const currentYearOrders = orders.filter(
-    (order: any) => new Date(order.signing_date).getFullYear() === new Date().getFullYear()
+    (order) => new Date(order.signing_date).getFullYear() === new Date().getFullYear()
   ).length;
 
   return (
@@ -75,8 +76,8 @@ export default function PageContent({ data }: PageContentProps) {
               />
               <StatsCard
                 title="Most Recent"
-                value={mostRecent.president}
-                description={new Date(mostRecent.signing_date).toLocaleDateString()}
+                value={mostRecent?.president ?? "No orders"}
+                description={mostRecent ? new Date(mostRecent.signing_date).toLocaleDateString() : "No data available"}
               />
             </div>
           )}
