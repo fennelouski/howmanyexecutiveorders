@@ -2,7 +2,7 @@
 
 Mode: parallel. Production domains remain on Vercel. Target cutover:
 22 October 2026 at 07:00 UTC, subject to the readiness rules in AGENTS.md.
-AWS-only releases are not enabled yet.
+AWS-only infrastructure updates are available; production cutover is not complete.
 
 Use Node 24, Python 3, GitHub CLI and AWS CLI. Sign into GitHub and the AWS
 profile for account 074861507225, then commit changes and run:
@@ -17,7 +17,7 @@ It checks the clean revision, repository, branch, cutoff date and AWS account,
 installs locked dependencies, runs checks, pushes the revision for Vercel,
 deploys AWS and tests the live AWS site. Verify Vercel's commit status separately.
 A plain Git push only updates Vercel. After the cutoff the parallel command
-refuses to run. Establish a tested AWS-only release command before cutover.
+refuses to run. Use the AWS-only command after verified cutover.
 
 AWS uses SST app `executiveorders`, stage `parallel`, region `us-west-2`.
 Read `.sst/outputs.json` for the preview URL. The preview username is `preview`;
@@ -41,3 +41,14 @@ Browser interaction, rollback and production domain cutover need separate checks
 Rollback means redeploying a previously verified revision. Do not delete the SST
 stage; deletion is protected and resources are retained. Free external services
 remain unchanged. See the root AGENTS.md for the review and cancellation dates.
+
+## AWS-only command
+
+`npm run deploy:aws-only` runs the same source/account checks, dependency install,
+tests, AWS deployment and live verification, without pushing to GitHub or
+triggering Vercel. It is available for preview repair and rollback now, and for
+regular releases after verified cutover. Source changes must still be committed
+and synchronized to GitHub through the normal source workflow. Disable Vercel
+Git deployments, hooks and workflows before post-cutover source pushes.
+The command does not change DNS, disable Vercel, or prove cutover is complete.
+At cutover, adapt the preview checks to the intended production access policy.
