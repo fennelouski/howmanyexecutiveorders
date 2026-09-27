@@ -30,6 +30,7 @@ The migration updates Next.js and its ESLint configuration to 16.3.6 for
 OpenNext 4.1.5. Vercel still uses `npm run build`. It also fixes two existing
 serverless data issues: the homepage fetched localhost, and the Federal Register
 request incorrectly combined all requested fields into one invalid field.
+Pagination also stops when the API omits its next-page link.
 Both the homepage and API now use the shared data function.
 
 Validation: `npm run test:aws`, `npm run lint`, `npm run build:aws` and the live

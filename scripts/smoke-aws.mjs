@@ -18,7 +18,7 @@ const home = await get("/");
 assert.equal(home.status, 200);
 assert.match(home.headers.get("x-robots-tag") ?? "", /noindex/);
 assert.match(home.body, /How Many Executive Orders/);
-assert.doesNotMatch(home.body, /Loading Executive Orders Data/);
+assert.ok(!home.body.includes("Loading Executive Orders Data"), "Home page must render data rather than its loading fallback");
 const asset = home.body.match(/src="([^"<>]*\/_next\/static\/[^"<>]+\.js[^"<>]*)"/)?.[1];
 assert.ok(asset);
 assert.equal((await get(asset)).status, 200);

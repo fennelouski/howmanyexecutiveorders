@@ -56,7 +56,7 @@ export async function fetchExecutiveOrders(
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch executive orders: ${response.statusText}`);
+    throw new Error(`Failed to fetch executive orders: HTTP ${response.status} ${response.statusText}`);
   }
 
   return response.json();
@@ -103,7 +103,7 @@ export async function getAllExecutiveOrders(): Promise<ExecutiveOrder[]> {
 
     allOrders.push(...ordersWithMetadata);
 
-    hasMore = response.next_page_url !== null;
+    hasMore = Boolean(response.next_page_url);
     currentPage++;
 
     // Safety limit to prevent infinite loops
