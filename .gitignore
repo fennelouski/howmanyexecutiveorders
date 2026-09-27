@@ -40,3 +40,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# AWS parallel deployment
+.sst/
+.open-next/
+.aws-preview-password
+sst-env.d.ts
+__pycache__/

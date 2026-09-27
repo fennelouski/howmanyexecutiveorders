@@ -11,14 +11,10 @@ export default function RunningTotal({ yearlyStats }: RunningTotalProps) {
   // Sort by year and calculate running total
   const sortedStats = [...yearlyStats].sort((a, b) => a.year - b.year);
 
-  let runningTotal = 0;
-  const data = sortedStats.map(stat => {
-    runningTotal += stat.count;
-    return {
-      year: stat.year,
-      total: runningTotal,
-    };
-  });
+  const data: Array<{ year: number; total: number }> = [];
+  for (const stat of sortedStats) {
+    data.push({ year: stat.year, total: (data.at(-1)?.total ?? 0) + stat.count });
+  }
 
   return (
     <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-md border border-zinc-200 dark:border-zinc-800 p-6">

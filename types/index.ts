@@ -35,7 +35,7 @@ export interface FederalRegisterResponse {
   count: number;
   description: string;
   total_pages: number;
-  next_page_url: string | null;
+  next_page_url?: string | null;
   previous_page_url: string | null;
   results: FederalRegisterDocument[];
 }

@@ -1,5 +1,5 @@
 // Federal Register API integration
-import { FederalRegisterResponse, ExecutiveOrder, PresidentStats } from '@/types';
+import { FederalRegisterResponse, FederalRegisterDocument, ExecutiveOrder, PresidentStats } from '@/types';
 import { PRESIDENTS, getPresidentTerm, getWikipediaTitle, getPresidentParty } from './presidentData';
 import { getOrderContext, isCongressInSession, isLameDuckPeriod } from './congressionalSessions';
 import { getPresidentImage } from './wikipediaImages';
@@ -36,8 +36,11 @@ export async function fetchExecutiveOrders(
     'per_page': perPage.toString(),
     'page': page.toString(),
     'order': 'oldest',
-    'fields[]': ['document_number', 'title', 'abstract', 'publication_date', 'signing_date', 'html_url', 'pdf_url', 'citation'].join(','),
   });
+
+  for (const field of ['document_number', 'title', 'abstract', 'publication_date', 'signing_date', 'html_url', 'pdf_url', 'citation']) {
+    params.append('fields[]', field);
+  }
 
   if (startDate) {
     params.append('conditions[publication_date][gte]', startDate);
@@ -53,7 +56,7 @@ export async function fetchExecutiveOrders(
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch executive orders: ${response.statusText}`);
+    throw new Error(`Failed to fetch executive orders: HTTP ${response.status} ${response.statusText}`);
   }
 
   return response.json();
@@ -100,7 +103,7 @@ export async function getAllExecutiveOrders(): Promise<ExecutiveOrder[]> {
 
     allOrders.push(...ordersWithMetadata);
 
-    hasMore = response.next_page_url !== null;
+    hasMore = Boolean(response.next_page_url);
     currentPage++;
 
     // Safety limit to prevent infinite loops
@@ -113,7 +116,7 @@ export async function getAllExecutiveOrders(): Promise<ExecutiveOrder[]> {
 }
 
 // Extract or infer president based on signing date
-function extractPresidentFromOrder(order: any): string {
+function extractPresidentFromOrder(order: FederalRegisterDocument): string {
   const signingDate = order.signing_date || order.publication_date;
   const year = new Date(signingDate).getFullYear();
 
@@ -234,4 +237,17 @@ export function getYearlyStats(orders: ExecutiveOrder[]): Array<{ year: number; 
   return Array.from(yearCounts.entries())
     .map(([year, count]) => ({ year, count }))
     .sort((a, b) => a.year - b.year);
+}
+
+// Shared by the server-rendered page and the public API. Serverless functions
+// cannot fetch their own app through localhost.
+export async function getExecutiveOrdersData() {
+  const orders = await getAllExecutiveOrders();
+  return {
+    total: getTotalCount(orders),
+    presidentStats: await calculatePresidentStats(orders),
+    yearlyStats: getYearlyStats(orders),
+    orders,
+    lastUpdated: new Date().toISOString(),
+  };
 }

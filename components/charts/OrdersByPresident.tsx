@@ -66,9 +66,9 @@ export default function OrdersByPresident({ stats }: OrdersByPresidentProps) {
               color: 'rgb(250 250 250)',
             }}
             labelStyle={{ color: 'rgb(161 161 170)' }}
-            formatter={(value: number, name: string, props: any) => [
-              value.toLocaleString(),
-              props.payload.fullName
+            formatter={(value, name, props) => [
+              value?.toLocaleString() ?? "",
+              props.payload?.fullName ?? name
             ]}
           />
           <Bar dataKey="count" radius={[0, 4, 4, 0]}>
